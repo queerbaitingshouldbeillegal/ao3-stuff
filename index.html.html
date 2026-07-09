@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Patronus Workskin Generator</title>
+<style>
+  :root {
+    --bg: #0b0e1a;
+    --panel: #131a2e;
+    --panel-2: #0e1424;
+    --border: #24304e;
+    --text: #dfe6f5;
+    --dim: #8b96b8;
+    --glow1: #cdefff;
+    --glow2: #8fd6ff;
+    --glow3: #5cb8ff;
+    --harry-accent: #7fd6a0;
+    --draco-accent: #b9a3ff;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(ellipse at top, #131b33 0%, #080a14 60%);
+    color: var(--text);
+    font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+    padding: 32px 20px 60px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 28px; }
+  header h1 {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    margin: 0 0 6px;
+    color: var(--glow1);
+    text-shadow: 0 0 8px rgba(143,214,255,0.5);
+  }
+  header p { color: var(--dim); font-size: 0.9rem; margin: 0; font-family: Georgia, serif; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 22px;
+  }
+  .panel h2 {
+    font-family: Georgia, serif;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--dim);
+    margin: 0 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--dim);
+    margin: 14px 0 6px;
+    font-family: Georgia, serif;
+  }
+  label:first-of-type { margin-top: 0; }
+
+  textarea, input[type=text] {
+    width: 100%;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    padding: 9px 11px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    resize: vertical;
+    line-height: 1.5;
+  }
+  textarea:focus, input[type=text]:focus {
+    outline: none;
+    border-color: var(--glow3);
+    box-shadow: 0 0 0 3px rgba(92,184,255,0.15);
+  }
+  textarea { min-height: 64px; }
+
+  .sender-toggle {
+    display: flex;
+    gap: 10px;
+  }
+  .sender-toggle label.opt {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    background: var(--panel-2);
+    font-size: 0.85rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .sender-toggle input { display: none; }
+  .sender-toggle label.opt.harry.active { border-color: var(--harry-accent); box-shadow: 0 0 0 2px rgba(127,214,160,0.2); }
+  .sender-toggle label.opt.draco.active { border-color: var(--draco-accent); box-shadow: 0 0 0 2px rgba(185,163,255,0.2); }
+  .sender-toggle img { width: 22px; height: 22px; object-fit: contain; opacity: 0.9; }
+
+  .custom-fields { display: none; margin-top: 4px; }
+  .custom-fields.show { display: block; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  button.gen {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background: linear-gradient(180deg, #1b2340, #131a2e);
+    border: 1px solid var(--glow3);
+    color: var(--glow1);
+    font-family: Georgia, serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: box-shadow 0.2s, background 0.2s;
+  }
+  button.gen:hover {
+    box-shadow: 0 0 16px rgba(92,184,255,0.35);
+    background: linear-gradient(180deg, #202b4c, #171f38);
+  }
+
+  .out-block { margin-top: 18px; }
+  .out-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .out-head span { font-size: 0.78rem; color: var(--dim); text-transform: uppercase; letter-spacing: 0.1em; }
+  .copy-btn {
+    font-family: Georgia, serif;
+    font-size: 0.72rem;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--glow3); }
+  .copy-btn.copied { color: var(--harry-accent); border-color: var(--harry-accent); }
+  pre.code-out {
+    background: #05070f;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    max-height: 260px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #b8c4e0;
+    margin: 0;
+  }
+
+  .note {
+    font-size: 0.78rem;
+    color: var(--dim);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  /* ---- preview, using the real workskin CSS ---- */
+  .preview-panel { grid-column: 1 / -1; }
+  #workskin { font-family: Georgia, serif; font-size: 1rem; line-height: 1.6; color: #cfd8ec; }
+  #workskin p { margin: 0 0 1em; }
+
+  #workskin .patronus-block { display: block; margin: 0 0 1em 0; }
+  #workskin .patronus-trigger { display: contents; }
+  #workskin .patronus-trigger summary {
+    display: inline; list-style: none; cursor: pointer; margin: 0; padding: 0;
+    color: inherit; text-shadow: 0 0 4px #cdefff, 0 0 10px #8fd6ff;
+  }
+  #workskin .patronus-trigger summary::-webkit-details-marker { display: none; }
+  #workskin .patronus-trigger summary::marker { content: ""; }
+  #workskin .patronus-msg { text-align: center; max-height: 0; padding: 0; overflow: hidden; }
+  #workskin .patronus-block:has(.patronus-trigger[open]) .patronus-msg { max-height: 1200px; padding: 20px 0; }
+  #workskin .patronus-icon {
+    display: inline-block; width: 140px; opacity: 0;
+    filter: drop-shadow(0 0 6px #cdefff) drop-shadow(0 0 16px #8fd6ff) drop-shadow(0 0 30px #5cb8ff);
+    transition: opacity 1.5s ease-in;
+  }
+  #workskin .patronus-block:has(.patronus-trigger[open]) .patronus-icon { opacity: 1; }
+  #workskin .typeit span { visibility: hidden; }
+  #workskin .patronus-block:has(.patronus-trigger[open]) .typeit span { visibility: visible; }
+  /* delays injected dynamically for preview, id'd per-instance */
+
+  .preview-shell {
+    background: #0d1220;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 26px;
+  }
+  .preview-hint { font-size: 0.75rem; color: var(--dim); margin-bottom: 14px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Patronus Workskin Generator</h1>
+    <p>Fill in the scene, pick a sender, get pasteable AO3 HTML — plus a one-time CSS block sized for any message length.</p>
+  </header>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>1 — Sender</h2>
+      <div class="sender-toggle">
+        <label class="opt harry active" id="lbl-harry">
+          <input type="radio" name="sender" value="harry" checked>
+          <img src="https://file.garden/aRDUU13e0mSzyMx7/ao3/hjp.png" alt=""> Harry
+        </label>
+        <label class="opt draco" id="lbl-draco">
+          <input type="radio" name="sender" value="draco">
+          <img src="https://file.garden/aRDUU13e0mSzyMx7/ao3/dlm.png" alt=""> Draco
+        </label>
+        <label class="opt" id="lbl-custom" style="flex:0.7;">
+          <input type="radio" name="sender" value="custom"> Custom
+        </label>
+      </div>
+
+      <div class="custom-fields" id="custom-fields">
+        <label for="custom-img">Custom patronus image URL</label>
+        <input type="text" id="custom-img" placeholder="https://file.garden/.../yours.png">
+        <div class="row2">
+          <div>
+            <label for="custom-alt">Alt text</label>
+            <input type="text" id="custom-alt" placeholder="Patronus: Otter">
+          </div>
+          <div>
+            <label for="custom-pronoun">Pronoun (his/her/their)</label>
+            <input type="text" id="custom-pronoun" placeholder="their">
+          </div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:22px;">2 — Surrounding text</h2>
+      <label for="pre-text">Paragraph before the trigger (leave off the trailing "and" — the trigger phrase supplies it)</label>
+      <textarea id="pre-text">Draco needs to send a warning to Harry before it's too late. His hand is clammy as he grabs his wand and</textarea>
+
+      <label for="trigger">Trigger phrase (the clickable summary)</label>
+      <input type="text" id="trigger" value="casts his patronus">
+
+      <label for="post-text">Paragraph after the trigger, before the message appears</label>
+      <textarea id="post-text">and watches as the silvery mist spews from his wand, coalescing into the shape of his dragon before it fires off out the window.</textarea>
+    </div>
+
+    <div class="panel">
+      <h2>3 — The message</h2>
+      <label for="alt-override">Alt text (auto-fills per sender, editable)</label>
+      <input type="text" id="alt-override" value="Patronus: Dragon">
+
+      <label for="message">What the patronus says</label>
+      <textarea id="message" style="min-height:120px;">Malfoy Manor. Tonight. They know you're coming — don't.</textarea>
+
+      <label for="delay-start">Typing starts at (seconds, after icon fade-in begins)</label>
+      <div class="row2">
+        <input type="text" id="delay-start" value="1.75">
+        <input type="text" id="delay-step" value="0.25">
+      </div>
+      <p class="note">Each character's reveal is delayed by <em>start + (index × step)</em>, matching your original timing. Leave defaults unless you want it faster/slower.</p>
+
+      <button class="gen" id="generate">Generate</button>
+    </div>
+  </div>
+
+  <div class="panel preview-panel" style="margin-top:20px;">
+    <h2>Live preview</h2>
+    <p class="preview-hint">Click the glowing trigger phrase below to test the reveal, same as it'll behave on AO3.</p>
+    <div class="preview-shell">
+      <div id="workskin"></div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:20px;">
+    <div class="panel">
+      <div class="out-head">
+        <span>HTML — paste where this patronus scene goes</span>
+        <button class="copy-btn" data-target="html-out">Copy</button>
+      </div>
+      <pre class="code-out" id="html-out"></pre>
+    </div>
+    <div class="panel">
+      <div class="out-head">
+        <span>CSS — paste once into your workskin (covers up to 150 characters)</span>
+        <button class="copy-btn" data-target="css-out">Copy</button>
+      </div>
+      <pre class="code-out" id="css-out"></pre>
+      <p class="note">This replaces your current <code>.typeit :nth-child(n)</code> rules — it's the same pattern, just extended from 14 up to 150 so no future message gets cut off. Paste it once; you don't need to regenerate it per-patronus.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const senders = {
+  harry: { img: "https://file.garden/aRDUU13e0mSzyMx7/ao3/hjp.png", alt: "Patronus: Stag", pronoun: "his" },
+  draco: { img: "https://file.garden/aRDUU13e0mSzyMx7/ao3/dlm.png", alt: "Patronus: Dragon", pronoun: "his" }
+};
+
+const radios = document.querySelectorAll('input[name="sender"]');
+const customFields = document.getElementById('custom-fields');
+const altOverride = document.getElementById('alt-override');
+
+function currentSender() {
+  return document.querySelector('input[name="sender"]:checked').value;
+}
+
+function syncAlt() {
+  const s = currentSender();
+  if (s === 'custom') {
+    customFields.classList.add('show');
+    altOverride.value = document.getElementById('custom-alt').value || 'Patronus: ';
+  } else {
+    customFields.classList.remove('show');
+    altOverride.value = senders[s].alt;
+    document.querySelectorAll('.sender-toggle .opt').forEach(el => el.classList.remove('active'));
+    document.getElementById('lbl-' + s).classList.add('active');
+  }
+}
+radios.forEach(r => r.addEventListener('change', syncAlt));
+document.getElementById('custom-alt').addEventListener('input', () => {
+  if (currentSender() === 'custom') altOverride.value = document.getElementById('custom-alt').value;
+});
+syncAlt();
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function buildSpans(message) {
+  return [...message].map(ch => `<span>${ch === ' ' ? ' ' : escapeHtml(ch)}</span>`).join('');
+}
+
+let instanceCounter = 0;
+
+function generate() {
+  instanceCounter++;
+  const s = currentSender();
+  let imgSrc, alt;
+  if (s === 'custom') {
+    imgSrc = document.getElementById('custom-img').value.trim() || 'PASTE-IMAGE-URL-HERE';
+    alt = document.getElementById('custom-alt').value.trim() || 'Patronus';
+  } else {
+    imgSrc = senders[s].img;
+    alt = altOverride.value.trim() || senders[s].alt;
+  }
+
+  const pre = document.getElementById('pre-text').value.trim();
+  const trigger = document.getElementById('trigger').value.trim();
+  const post = document.getElementById('post-text').value.trim();
+  const message = document.getElementById('message').value;
+  const spans = buildSpans(message);
+
+  const html = `<div class="patronus-block">
+  <p>${pre}</p>
+  <details class="patronus-trigger">
+    <summary>${trigger}</summary>
+  </details>
+  <p>${post}</p>
+  <div class="patronus-msg">
+    <p><img class="patronus-icon" src="${imgSrc}" alt="${alt}"></p>
+    <div class="typeit">
+      <p>${spans}</p>
+    </div>
+  </div>
+</div>`;
+
+  document.getElementById('html-out').textContent = html;
+
+  // CSS covering up to 150 characters
+  const start = parseFloat(document.getElementById('delay-start').value) || 1.75;
+  const step = parseFloat(document.getElementById('delay-step').value) || 0.25;
+  const MAX = 150;
+  let cssLines = [];
+  for (let i = 1; i <= MAX; i++) {
+    const delay = (start + (i - 1) * step).toFixed(2);
+    cssLines.push(`#workskin .typeit :nth-child(${i}) { transition-delay: ${delay}s; }`);
+  }
+  const css = cssLines.join('\n');
+  document.getElementById('css-out').textContent = css;
+
+  // live preview: inject a fresh style block scoped by a unique class, plus the block itself
+  let styleEl = document.getElementById('preview-dynamic-style');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'preview-dynamic-style';
+    document.head.appendChild(styleEl);
+  }
+  styleEl.textContent = css;
+
+  document.getElementById('workskin').innerHTML = html;
+}
+
+document.getElementById('generate').addEventListener('click', generate);
+
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = document.getElementById(btn.dataset.target);
+    navigator.clipboard.writeText(target.textContent).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1400);
+    });
+  });
+});
+
+// generate once on load
+generate();
+</script>
+</body>
+</html>

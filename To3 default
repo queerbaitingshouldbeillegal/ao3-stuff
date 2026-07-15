@@ -1,0 +1,24 @@
+#header h1.heading a {
+  display: flex;
+  align-items: flex-end;
+}
+
+#header h1.heading a img.logo {
+  content: url("https://i.imgur.com/75DWu0a.png");
+  width: auto;
+  height: 34px;
+}
+
+#header h1.heading a span {
+  display: none;
+}
+
+#header h1.heading a::after {
+  content: "Tales of Our Own";
+  display: inline-block;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.75rem;
+  font-weight: normal;
+  line-height: 1.2;
+  margin-left: 8px;
+}
